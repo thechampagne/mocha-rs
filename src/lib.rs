@@ -98,6 +98,35 @@ impl Mocha {
     }
 }
 
+impl Object {
+    pub fn get(&self, index: usize) -> Option<Field> {
+	unsafe {
+	    if index >= self.obj.fields_len { return None }
+	    let field = raw::mocha_field(&self.obj as _, index);
+	    match field.type_ {
+		raw::mocha_value_type_t_MOCHA_VALUE_TYPE_NIL => Some(Field { name: CStr::from_ptr(field.name).to_bytes(),
+									     value: Value::Nil }),
+		raw::mocha_value_type_t_MOCHA_VALUE_TYPE_STRING => Some(Field { name: CStr::from_ptr(field.name).to_bytes(),
+										value: Value::String(CStr::from_ptr(field.value.string).to_bytes()) }),
+		raw::mocha_value_type_t_MOCHA_VALUE_TYPE_REFERENCE => Some(Field { name: CStr::from_ptr(field.name).to_bytes(),
+										   value: Value::Ref(Reference{reference: field.value.reference}) }),
+		raw::mocha_value_type_t_MOCHA_VALUE_TYPE_BOOLEAN => Some(Field { name: CStr::from_ptr(field.name).to_bytes(),
+										 value: Value::Bool(if field.value.boolean == 0
+												    { false } else { true })}),
+		raw::mocha_value_type_t_MOCHA_VALUE_TYPE_OBJECT => Some(Field { name: CStr::from_ptr(field.name).to_bytes(),
+										value: Value::Object(Object{obj: field.value.object}) }),
+		raw::mocha_value_type_t_MOCHA_VALUE_TYPE_ARRAY => Some(Field { name: CStr::from_ptr(field.name).to_bytes(),
+									       value: Value::Array(Array{array: field.value.array}) }),
+		raw::mocha_value_type_t_MOCHA_VALUE_TYPE_FLOAT64 => Some(Field { name: CStr::from_ptr(field.name).to_bytes(),
+										 value: Value::Float(field.value.float64) }),
+		raw::mocha_value_type_t_MOCHA_VALUE_TYPE_INTEGER64 => Some(Field { name: CStr::from_ptr(field.name).to_bytes(),
+										   value: Value::Int(field.value.integer64) }),
+		_ => None
+	    }
+	}
+    }
+}
+
 #[inline(always)]
 fn handle_mocha_error(err: raw::mocha_error_t) -> Option<MochaError> {
     match err {
