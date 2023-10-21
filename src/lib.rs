@@ -71,7 +71,7 @@ impl Mocha {
 	}
     }
 
-    pub fn field_get(&self, index: usize) -> Option<Field> {
+    pub fn get(&self, index: usize) -> Option<Field> {
 	unsafe {
 	    if index >= self.obj.fields_len { return None }
 	    let field = raw::mocha_field(&self.obj as _, index);
