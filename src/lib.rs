@@ -52,6 +52,12 @@ pub struct Mocha {
     obj: raw::mocha_object_t,
 }
 
+impl Drop for Mocha {
+    fn drop(&mut self) {
+	unsafe { raw::mocha_deinit(&mut self.obj as _) }
+    }
+}
+
 impl Mocha {
     pub fn parse(src: &str) -> Result<Self, MochaError> {
 	unsafe {
