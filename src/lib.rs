@@ -127,6 +127,27 @@ impl Object {
     }
 }
 
+impl Array {
+    pub fn get(&self, index: usize) -> Option<Value> {
+	unsafe {
+	    if index >= self.array.items_len { return None }
+	    let mut value = raw::mocha_value_t{boolean: 0};
+	    let type_ = raw::mocha_array(&self.array as _, &mut value as _, index);
+	    match type_ {
+		raw::mocha_value_type_t_MOCHA_VALUE_TYPE_NIL => Some(Value::Nil),
+		raw::mocha_value_type_t_MOCHA_VALUE_TYPE_STRING => Some(Value::String(CStr::from_ptr(value.string).to_bytes())),
+		raw::mocha_value_type_t_MOCHA_VALUE_TYPE_REFERENCE => Some(Value::Ref(Reference{reference: value.reference})),
+		raw::mocha_value_type_t_MOCHA_VALUE_TYPE_BOOLEAN => Some(Value::Bool(if value.boolean == 0 { false } else { true })),
+		raw::mocha_value_type_t_MOCHA_VALUE_TYPE_OBJECT => Some(Value::Object(Object{obj: value.object})),
+		raw::mocha_value_type_t_MOCHA_VALUE_TYPE_ARRAY => Some(Value::Array(Array{array: value.array})),
+		raw::mocha_value_type_t_MOCHA_VALUE_TYPE_FLOAT64 => Some(Value::Float(value.float64)),
+		raw::mocha_value_type_t_MOCHA_VALUE_TYPE_INTEGER64 => Some(Value::Int(value.integer64)),
+		_ => None
+	    }
+	}
+    }
+}
+
 #[inline(always)]
 fn handle_mocha_error(err: raw::mocha_error_t) -> Option<MochaError> {
     match err {
