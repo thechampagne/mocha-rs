@@ -1,0 +1,12 @@
+[package]
+name = "mocha-rs"
+version = "0.1.0"
+description = "Binding for mocha parser an elegant configuration language for both humans and machines"
+authors = ["XXIV"]
+homepage = "https://github.com/thechampagne/mocha-rs"
+repository = "https://github.com/thechampagne/mocha-rs"
+readme = "README.md"
+license = "BSD-3-Clause-Clear"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
