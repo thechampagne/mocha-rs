@@ -169,6 +169,25 @@ impl Array {
     }
 }
 
+impl Reference<'_> {
+    pub fn next(&self) -> Option<Self> {
+	unsafe {
+	    let mut reference = raw::mocha_reference_t{name: 0 as _,
+						       name_len: 0,
+						       child: self.child,index: 0};
+	    let err = raw::mocha_reference_next(&mut reference as _);
+	    if err == 0 {
+		Some(Self{child: reference.child,
+		     name: slice::from_raw_parts(reference.name as _,
+						 reference.name_len),
+		     index: reference.index})
+	    } else {
+		None
+	    }
+	}
+    }
+}
+
 #[inline(always)]
 fn handle_mocha_error(err: raw::mocha_error_t) -> Option<MochaError> {
     match err {
